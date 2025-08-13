@@ -1,0 +1,195 @@
+{% liquid
+  assign color_option_index = nil
+  assign color_option_name  = ''
+  for opt in product.options_with_values
+    assign opt_down = opt.name | downcase
+    if opt_down contains 'color' or opt_down contains 'колір' or opt_down contains 'цвет'
+      assign color_option_index = opt.position
+      assign color_option_name  = opt.name
+      break
+    endif
+  endfor
+%}
+
+<div class="page-width pdp">
+  <div class="product-layout">
+    <!-- ЛЕВАЯ КОЛОНКА: SWIPER -->
+    <div class="product-media">
+      <div
+        class="product-swiper"
+        id="product-swiper-{{ section.id }}"
+        data-color-option="{{ color_option_name | default: 'Color' }}"
+        data-mobile-space="{{ section.settings.mobile_space }}"
+        data-show-pagination="{{ section.settings.show_pagination }}"
+        data-show-navigation="{{ section.settings.show_navigation }}"
+      >
+      <button class="zoom-toggle" type="button" aria-label="Zoom"></button>
+
+        <div class="swiper mySwiper">
+          <div class="swiper-wrapper">
+            {%- for image in product.images -%}
+              {%- assign color_values = '' -%}
+              {%- assign cv = '' -%}
+
+              {%- if color_option_index -%}
+                {%- for v in product.variants -%}
+                  {%- if v.image and v.image.id == image.id -%}
+                    {%- case color_option_index -%}
+                      {%- when 1 -%}{%- assign cv = v.option1 | downcase | strip -%}
+                      {%- when 2 -%}{%- assign cv = v.option2 | downcase | strip -%}
+                      {%- when 3 -%}{%- assign cv = v.option3 | downcase | strip -%}
+                    {%- endcase -%}
+                    {%- if cv != blank -%}
+                      {%- unless color_values contains cv -%}
+                        {%- if color_values == '' -%}
+                          {%- assign color_values = cv -%}
+                        {%- else -%}
+                          {%- assign color_values = color_values | append: '|' | append: cv -%}
+                        {%- endif -%}
+                      {%- endunless -%}
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endif -%}
+
+              {%- comment -%} Фолбэк: берём цвет(а) из alt, можно через запятую/слэш/точку с запятой {%- endcomment -%}
+              {%- assign alt_colors = image.alt | downcase | strip | replace: ',', '|' | replace: ';', '|' | replace: '/', '|' -%}
+              {%- if color_values == '' -%}
+                {%- assign data_colors = alt_colors -%}
+              {%- else -%}
+                {%- assign data_colors = color_values -%}
+              {%- endif -%}
+
+             <div class="swiper-slide" data-colors="{{ data_colors }}">
+  <div class="swiper-zoom-container">
+    {{ image | image_url: width: 1600 | image_tag }}
+  </div>
+</div>
+
+            {%- endfor -%}
+          </div>
+
+          {%- if section.settings.show_navigation -%}
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+          {%- endif -%}
+          {%- if section.settings.show_pagination -%}
+            <div class="swiper-pagination"></div>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div class="product-info">
+      {%- if product.vendor != blank -%}
+        <span class="product-vendor">{{ product.vendor }}</span>
+      {%- endif -%}
+      <h1 class="product-title">{{ product.title }}</h1>
+
+      {%- assign current = product.selected_or_first_available_variant -%}
+      <div class="price">
+        <span class="price__current">{{ current.price | money_with_currency }}</span>
+        {%- if current.compare_at_price > current.price -%}
+          <s class="price__compare">{{ current.compare_at_price | money_with_currency }}</s>
+        {%- endif -%}
+        {%- unless current.available -%}
+          <span class="badge badge--soldout">Sold out</span>
+        {%- endunless -%}
+      </div>
+
+      {%- assign form_id = 'pdp-form-' | append: section.id -%}
+      {% form 'product', product, id: form_id %}
+        <input type="hidden" name="id" value="{{ current.id }}" class="variant-id-input">
+
+        {%- for opt in product.options_with_values -%}
+          {%- assign opt_down = opt.name | downcase -%}
+          {%- assign is_color = false -%}
+          {%- if opt_down contains 'color' or opt_down contains 'колір' or opt_down contains 'цвет' -%}
+            {%- assign is_color = true -%}
+          {%- endif -%}
+
+          <div class="option-block">
+            <label class="option-label">{{ opt.name }}</label>
+
+            {%- if is_color -%}
+              <div class="option-pills" data-option-name="{{ opt.name }}">
+                {%- for val in opt.values -%}
+                  {%- assign rid = 'opt-' | append: section.id | append: '-' | append: forloop.parentloop.index | append: '-' | append: forloop.index -%}
+                  <input
+                    type="radio"
+                    id="{{ rid }}"
+                    class="sr-only"
+                    name="options[{{ opt.name }}]"
+                    value="{{ val }}"
+                    {% if val == opt.selected_value %}checked{% endif %}
+                  >
+                  <label class="pill" for="{{ rid }}">{{ val }}</label>
+                {%- endfor -%}
+              </div>
+            {%- else -%}
+              <select class="select" name="options[{{ opt.name }}]" data-option-name="{{ opt.name }}">
+                {%- for val in opt.values -%}
+                  <option value="{{ val | escape }}" {% if val == opt.selected_value %}selected{% endif %}>{{ val }}</option>
+                {%- endfor -%}
+              </select>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+
+        <div class="qty-row">
+          <label class="qty-label">{{ 'products.product.quantity' | t | default: 'Quantity' }}</label>
+          <div class="qty-box">
+            <button type="button" class="qty-btn" data-dec>-</button>
+            <input class="qty-input" name="quantity" type="number" value="1" min="1">
+            <button type="button" class="qty-btn" data-inc>+</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn add-to-cart" type="submit" name="add" {% unless current.available %}disabled{% endunless %}>
+            {% if current.available %}{{ 'products.product.add_to_cart' | t | default: 'Add to cart' }}{% else %}{{ 'products.product.sold_out' | t | default: 'Sold out' }}{% endif %}
+          </button>
+          {{ form | payment_button }}
+        </div>
+      {% endform %}
+
+      <!-- Данные для JS -->
+      <script id="ProductJson-{{ section.id }}" type="application/json">
+        {{ product | json }}
+      </script>
+
+      <!-- Аккордеон из метафилдов -->
+      {%- assign titles_mf = product.metafields.custom.accordion_titles -%}
+      {%- assign desc_mf   = product.metafields.custom.accordion_descriptions1 | default: product.metafields.custom.accordion_descriptions -%}
+      {%- if titles_mf and desc_mf -%}
+        {%- assign desc_text = desc_mf.value | default: desc_mf -%}
+        {%- assign descs = desc_text | split: '\n' -%}
+        <div class="product-accordion" data-allow-multiple="{{ section.settings.accordion_allow_multi }}">
+          {%- for t in titles_mf -%}
+            {%- assign t_text = t.value | default: t -%}
+            {%- assign d = descs[forloop.index0] | strip -%}
+            {%- if t_text != blank and d != blank -%}
+              <div class="acc-item">
+                <button type="button" class="acc-toggle">{{ t_text }}</button>
+                <div class="acc-content" hidden>{{ d | newline_to_br }}</div>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Product gallery + options",
+  "settings": [
+    { "type": "range", "id": "mobile_space",  "label": "Mobile space",  "min": 0, "max": 40, "step": 2, "default": 10 },
+    { "type": "checkbox", "id": "show_pagination", "label": "Show pagination", "default": true },
+    { "type": "checkbox", "id": "show_navigation", "label": "Show arrows", "default": true },
+    { "type": "checkbox", "id": "accordion_allow_multi", "label": "Allow multiple open accordions", "default": false }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,432 @@
+/** Critical CSS for the theme. This file is included on every page. */
+
+/* Reset styles inspired by https://www.joshwcomeau.com/css/custom-css-reset/ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  min-height: 100svh;
+}
+
+html:has(dialog[scroll-lock][open], details[scroll-lock][open]) {
+  overflow: hidden;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  border-radius: var(--style-border-radius-inputs);
+}
+
+select {
+  background-color: var(--color-background);
+  color: currentcolor;
+}
+
+dialog {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+p {
+  text-wrap: pretty;
+}
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+p:empty {
+  display: none;
+}
+
+:is(p, h1, h2, h3, h4, h5, h6):first-child,
+:empty:first-child + :where(p, h1, h2, h3, h4, h5, h6) {
+  margin-block-start: 0;
+}
+
+:is(p, h1, h2, h3, h4, h5, h6):last-child,
+:where(p, h1, h2, h3, h4, h5, h6) + :has(+ :empty:last-child) {
+  margin-block-end: 0;
+}
+
+/** Theme styles below */
+body {
+  font-family: var(--font-primary--family);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/** Section layout utilities */
+
+/**
+ * Setup a grid that enables both full-width and constrained layouts
+ * depending on the class of the child elements.
+ *
+ * By default, a minimum content margin is set on the left and right
+ * sides of the section and the content is centered in the viewport to
+ * not exceed the maximum page width.
+ *
+ * When a child element is given the `full-width` class, it will span
+ * the entire viewport.
+ */
+.shopify-section {
+  --content-width: min(
+    calc(var(--page-width) - var(--page-margin) * 2),
+    calc(100% - var(--page-margin) * 2)
+  );
+  --content-margin: minmax(var(--page-margin), 1fr);
+  --content-grid: var(--content-margin) var(--content-width) var(--content-margin);
+
+  /* This is required to make <img> elements work as background images */
+  position: relative;
+  grid-template-columns: var(--content-grid);
+  display: grid;
+  width: 100%;
+}
+
+/* Child elements, by default, are constrained to the central column of the grid. */
+.shopify-section > * {
+  grid-column: 2;
+}
+
+/* Child elements that use the full-width utility class span the entire viewport. */
+.shopify-section > .full-width {
+  grid-column: 1 / -1;
+}
+
+.shopify-section > .pdp {
+  grid-column: 1 / -1;
+}
+
+.pdp {
+  padding: 0 1.6rem;
+}
+
+.pdp .product-layout {
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
+}
+
+@media (max-width: 989px) {
+  .pdp .product-layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.product-swiper .swiper:not(.is-ready) .swiper-wrapper {
+  display: block;
+}
+.product-swiper .swiper:not(.is-ready) .swiper-slide {
+  display: none;
+}
+.product-swiper .swiper:not(.is-ready) .swiper-slide:first-child {
+  display: block;
+}
+
+.pdp .product-swiper {
+  margin: 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pdp .product-swiper .swiper {
+  width: 400px; 
+  max-width: 100%;
+}
+
+.pdp .product-media .swiper-wrapper {
+  align-items: center;
+}
+
+.pdp .product-media .swiper-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.pdp .product-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  color: #000;
+  width: 28px;
+  height: 28px;
+  background: none;
+}
+
+.swiper-pagination {
+  margin-top: 6px;
+  position: static;
+}
+
+.swiper-pagination-bullet {
+  opacity: 0.3;
+  background: #000;
+}
+
+.swiper-pagination-bullet-active {
+  opacity: 1;
+}
+
+
+.pdp .product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 440px;
+  padding-top: 40px;
+}
+
+.pdp .product-vendor {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.pdp .product-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.pdp .price {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.pdp .price__current {
+  color: #111;
+}
+
+.pdp .price__compare {
+  color: #aaa;
+  text-decoration: line-through;
+}
+
+.pdp .badge--soldout {
+  background: #eee;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.pdp .option-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pdp .option-label {
+  font-size: 0.65rem;     
+  color: #444;         
+  font-weight: 400;        
+  line-height: 1.4;
+}
+
+.pdp .option-pills {
+  display: flex;
+  gap: 8px;
+}
+
+.pdp .option-pills .sr-only {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pdp .option-pills .pill {
+  padding: 0.45rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  font-size: 0.95rem;
+}
+
+.pdp .option-pills input:checked + .pill {
+  background: #111;
+  color: white;
+  border-color: #111;
+}
+
+.pdp .select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.pdp .qty-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pdp .qty-box {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 120px;
+  margin-bottom: 20px;
+}
+
+.pdp .qty-input {
+  width: 50px;
+  text-align: center;
+  border: none;
+  font-size: 1rem;
+  padding: 0.4rem;
+}
+
+.pdp .qty-label {
+  font-size: 0.65rem;     
+  color: #444;    
+  font-weight: 400;     
+  margin-top: 10px;      
+  line-height: 1.4;
+}
+
+
+.pdp .qty-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.pdp .actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pdp .btn {
+  appearance: none;
+  border: none;
+  padding: 0.9rem 1rem;
+  background: #111;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: center;
+  width: 100%;
+}
+
+.pdp .btn:hover {
+  background: #000;
+}
+
+.pdp .btn-outline {
+  background: white;
+  color: #666;
+  border: 1px solid #ccc;
+}
+
+.pdp .btn-outline[disabled],
+.pdp .btn-outline[aria-disabled='true'] {
+  background: white;
+  color: #aaa;
+  border-color: #ddd;
+  cursor: not-allowed;
+}
+
+.shopify-payment-button {
+  width: 100%;
+}
+
+.shopify-payment-button__button {
+  appearance: none;
+  border: none;
+  padding: 0.9rem 1rem;
+  background: #111 !important;
+  color: white !important;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 100%;
+}
+
+.shopify-payment-button__button:hover {
+  background: #000 !important;
+}
+
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.qty-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.pdp .product-media { position: relative; }
+.pdp .zoom-toggle{
+  position:absolute; top:12px; left:12px;
+  width:40px; height:40px; border-radius:999px;
+  background:#fff; border:1px solid rgba(0,0,0,.12);
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  display:grid; place-items:center; z-index:4; cursor:pointer;
+}
+
+.pdp .zoom-toggle::before{
+  content:"";
+  width:20px; height:20px; display:block;
+  background: no-repeat center / contain
+    url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='11' cy='11' r='7' stroke='%23111' stroke-width='2'/%3E%3Cpath d='M21 21L16.65 16.65' stroke='%23111' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M11 8v6M8 11h6' stroke='%23111' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.pdp .zoom-toggle.is-zoomed::before{
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='11' cy='11' r='7' stroke='%23111' stroke-width='2'/%3E%3Cpath d='M21 21L16.65 16.65' stroke='%23111' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M8 11h6' stroke='%23111' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.pdp .product-media .swiper-slide { cursor: zoom-in; }
+.pdp .product-media .swiper-slide.swiper-slide-zoomed,
+.pdp .product-media .swiper-zoom-container { cursor: move; }
